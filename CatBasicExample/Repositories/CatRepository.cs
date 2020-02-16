@@ -33,13 +33,16 @@ namespace CatBasicExample.Repositories
         public CatRepository(Random random)
         {
             this.random = random;
-            IEnumerable<Cat> cats = Enumerable.Range(minCatRandom, random.Next(minCatRandom, maxCatRandom)).Select(item => GenerateCat());
+            IEnumerable<Cat> cats = Enumerable.Range(minCatRandom, random.Next(minCatRandom, maxCatRandom))
+                                              .Select(item => GenerateCat());
             this.cats.AddRange(cats);
         }
 
         public Cat Add(Cat cat)
         {
-            throw new System.NotImplementedException();
+            cat.Id = Guid.NewGuid().ToString();
+            cats.Add(cat);
+            return cat;
         }
 
         public List<Cat> Cats() => cats;
@@ -51,7 +54,14 @@ namespace CatBasicExample.Repositories
 
         public Cat Update(string id, Cat newCat)
         {
-            throw new System.NotImplementedException();
+            int index = cats.FindIndex(cat => string.Equals(id, cat.Id, StringComparison.CurrentCultureIgnoreCase));
+            if (index > -1)
+            {
+                if (newCat.Id == null) newCat.Id = id;
+                cats.RemoveAt(index);
+                cats.Insert(index, newCat);
+            }
+            return newCat;
         }
 
         private Cat GenerateCat()

@@ -1,12 +1,13 @@
 using System.Collections.Generic;
 using CatBasicExample.Repositories;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CatBasicExample.Controllers
 {
     internal interface IController<T>
     {
-        public List<T> Get();
+        public ActionResult Get();
 
         public T Add(T data);
 
@@ -14,7 +15,7 @@ namespace CatBasicExample.Controllers
 
         public bool Delete(string id);
     }
-    
+
     [ApiController]
     [Route("api/cat")]
     public class CatController : ControllerBase, IController<Cat>
@@ -26,26 +27,28 @@ namespace CatBasicExample.Controllers
             this.repository = repository;
         }
 
-        public Cat Add(Cat cat)
+        [HttpPost]
+        public Cat Add([FromForm] Cat cat)
         {
             return repository.Add(cat);
         }
 
+        [HttpDelete("{id}")]
         public bool Delete(string id)
         {
             return repository.Delete(id);
         }
 
-
-        public Cat Update(string id, Cat cat)
+        [HttpPost("{id}")]
+        public Cat Update(string id, [FromBody] Cat cat)
         {
             return repository.Update(id, cat);
         }
 
         [HttpGet()]
-        public List<Cat> Get()
+        public ActionResult Get()
         {
-            return repository.Cats();
+            return Ok(repository.Cats());
         }
 
     }
