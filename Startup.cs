@@ -1,8 +1,10 @@
 using System;
+using CatBasicExample.Domain;
 using CatBasicExample.Repositories;
 using CatBasicExample.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -29,7 +31,15 @@ namespace CatBasicExample
             services.AddSingleton<Random, Random>()
                     .AddSingleton<ICatRepository, FakeCatRepository>()
                     .AddSingleton<ICatService, CatService>()
-                    .AddSwaggerGen(c => c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" }));
+                    .AddSwaggerGen(c => c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" }))
+                    .AddDbContext<CatContext>(initDBContext);
+        }
+
+        private void initDBContext(DbContextOptionsBuilder optionBuilder)
+        {
+            optionBuilder
+                .UseNpgsql(Configuration.GetConnectionString("tvc12"))
+                .UseSnakeCaseNamingConvention();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
