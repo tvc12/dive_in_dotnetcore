@@ -29,10 +29,11 @@ namespace CatBasicExample
                     .AddNewtonsoftJson(opt => opt.SerializerSettings.ContractResolver = new DefaultContractResolver { NamingStrategy = new SnakeCaseNamingStrategy() });
 
             services.AddSingleton<Random, Random>()
-                    .AddSingleton<ICatRepository, FakeCatRepository>()
+                    .AddSingleton<ICatRepository, CatPostgreRepository>()
                     .AddSingleton<ICatService, CatService>()
                     .AddSwaggerGen(c => c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" }))
-                    .AddDbContext<CatContext>(initDBContext);
+                    .AddDbContext<CatContext>(initDBContext, ServiceLifetime.Singleton, ServiceLifetime.Singleton);
+                    // .AddEntityFrameworkStores<CatContext>();
         }
 
         private void initDBContext(DbContextOptionsBuilder optionBuilder)

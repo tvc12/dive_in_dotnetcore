@@ -8,10 +8,13 @@ namespace CatBasicExample.Domain
         {
         }
 
-        protected override void OnModelCreating(ModelBuilder moderbuilder)
+        public virtual DbSet<Cat> Cat { get; set; }  
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(moderbuilder);
-            moderbuilder.Entity<Cat>().ToTable("Cat");
+            modelBuilder.HasDefaultSchema("public");
+            base.OnModelCreating(modelBuilder);
+            // modelBuilder.Entity<Cat>().ToTable("Cat");
         }
     }
 }
