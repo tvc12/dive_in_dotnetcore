@@ -1,0 +1,5 @@
+#! /bin/bash
+rm -rf build &&
+dotnet build --configuration Release -o build &&
+dotnet publish --configuration Production -o build &&
+dotnet build/CatBasicExample.dll --urls="http://+:12120;https://+:12121"
