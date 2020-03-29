@@ -13,6 +13,8 @@ namespace CatBasicExample
     {
         public static void Main(string[] args)
         {
+            // var configuration = new ConfigurationBuilder().AddCommandLine(args).Build();
+
             CreateHostBuilder(args).Build().Run();
         }
 

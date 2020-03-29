@@ -1,5 +1,6 @@
 using System;
 using CatBasicExample.Repositories;
+using CatBasicExample.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -26,8 +27,9 @@ namespace CatBasicExample
                     .AddNewtonsoftJson(opt => opt.SerializerSettings.ContractResolver = new DefaultContractResolver { NamingStrategy = new SnakeCaseNamingStrategy() });
 
             services.AddSingleton<Random, Random>()
-                    .AddSingleton<ICatRepository<Cat>, CatRepository>();
-            services.AddSwaggerGen(c => c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" }));
+                    .AddSingleton<ICatRepository, FakeCatRepository>()
+                    .AddSingleton<ICatService, CatService>()
+                    .AddSwaggerGen(c => c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" }));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -43,6 +45,10 @@ namespace CatBasicExample
                     c.RoutePrefix = string.Empty;
 
                 });
+            }
+            if (env.IsProduction() || env.IsStaging())
+            {
+                app.UseExceptionHandler("/Error"); //user forder 
             }
 
             app.UseHttpsRedirection();

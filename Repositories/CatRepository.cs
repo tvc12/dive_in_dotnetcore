@@ -4,18 +4,18 @@ using System.Linq;
 
 namespace CatBasicExample.Repositories
 {
-    public interface ICatRepository<T>
+    public interface ICatRepository
     {
-        public List<T> Cats();
+        public List<Cat> Cats();
 
-        public T Add(T cat);
+        public Cat Add(Cat cat);
 
-        public T Update(string id, T newCat);
+        public Cat Update(string id, Cat newCat);
 
         public bool Delete(string id);
     }
 
-    public class CatRepository : ICatRepository<Cat>
+    public class FakeCatRepository : ICatRepository
     {
         private readonly List<Cat> cats = new List<Cat>();
 
@@ -30,7 +30,7 @@ namespace CatBasicExample.Repositories
 
         private Random random;
 
-        public CatRepository(Random random)
+        public FakeCatRepository(Random random)
         {
             this.random = random;
             IEnumerable<Cat> cats = Enumerable.Range(minCatRandom, random.Next(minCatRandom, maxCatRandom))
