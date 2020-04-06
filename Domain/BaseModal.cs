@@ -1,14 +1,16 @@
 using System;
-
-public abstract class BaseModal
+namespace CatBasicExample.Domain
 {
-    protected string id;
+    public abstract class BaseModal
+    {
+        protected string id;
 
-    protected DateTime createdAt;
+        protected DateTime createdAt;
 
-    protected DateTime updatedAt;
+        protected DateTime updatedAt;
 
-    protected string createdBy;
+        protected string createdBy;
 
-    protected string updatedBy;
+        protected string updatedBy;
+    }
 }

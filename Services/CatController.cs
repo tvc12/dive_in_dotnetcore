@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using CatBasicExample.Domain;
 using CatBasicExample.Repositories;
 
 namespace CatBasicExample.Services

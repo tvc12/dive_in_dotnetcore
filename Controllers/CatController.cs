@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using CatBasicExample.Domain;
 using CatBasicExample.Services;
 using Microsoft.AspNetCore.Mvc;
 

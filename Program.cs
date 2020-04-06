@@ -1,11 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 namespace CatBasicExample
 {
@@ -13,7 +7,6 @@ namespace CatBasicExample
     {
         public static void Main(string[] args)
         {
-            // var configuration = new ConfigurationBuilder().AddCommandLine(args).Build();
 
             CreateHostBuilder(args).Build().Run();
         }
