@@ -1,9 +1,14 @@
 using System;
+using System.Data.Common;
+using System.Threading.Tasks;
 using CatBasicExample.Domain;
+using CatBasicExample.Exception;
 using CatBasicExample.Repositories;
 using CatBasicExample.Services;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,7 +38,7 @@ namespace CatBasicExample
                     .AddSingleton<ICatService, CatService>()
                     .AddSwaggerGen(c => c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" }))
                     .AddDbContext<CatContext>(initDBContext, ServiceLifetime.Singleton, ServiceLifetime.Singleton);
-                    // .AddEntityFrameworkStores<CatContext>();
+            // .AddEntityFrameworkStores<CatContext>();
         }
 
         private void initDBContext(DbContextOptionsBuilder optionBuilder)
@@ -48,7 +53,6 @@ namespace CatBasicExample
         {
             if (env.IsDevelopment())
             {
-                app.UseDeveloperExceptionPage();
                 app.UseSwagger();
                 app.UseSwaggerUI(c =>
                 {
@@ -56,6 +60,7 @@ namespace CatBasicExample
                     c.RoutePrefix = string.Empty;
 
                 });
+                app.UseMiddleware(typeof(ExceptionHandler));
             }
             if (env.IsProduction() || env.IsStaging())
             {
@@ -73,5 +78,6 @@ namespace CatBasicExample
                 endpoints.MapControllers();
             });
         }
+
     }
 }
