@@ -1,14 +1,18 @@
 using System;
+using System.Text;
+using AuthService.Service;
 using CatBasicExample.Domain;
 using CatBasicExample.Exception;
 using CatBasicExample.Repositories;
 using CatBasicExample.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
@@ -34,7 +38,26 @@ namespace CatBasicExample
                         opt.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
                     });
 
+            services.AddAuthentication(x =>
+            {
+                x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            }
+            ).AddJwtBearer(x =>
+            {
+                x.RequireHttpsMetadata = false;
+                x.SaveToken = true;
+                x.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["auth:sk"]))
+                };
+            });
+
             services.AddSingleton<Random, Random>()
+                    .AddSingleton<IAuthService, AuthService.Service.AuthService>()
                     .AddSingleton<ICatRepository, CatPostgreRepository>()
                     .AddSingleton<ICatService, CatService>()
                     .AddSwaggerGen(c => c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" }))
@@ -51,14 +74,18 @@ namespace CatBasicExample
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseCors(conf =>
+                conf.AllowAnyOrigin()
+                    .AllowAnyHeader()
+                    .AllowAnyMethod());
+
             if (env.IsDevelopment())
             {
                 app.UseSwagger();
                 app.UseSwaggerUI(c =>
                 {
                     c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
-                    c.RoutePrefix = string.Empty;
-
+                    c.RoutePrefix = string.Empty; //config route swagger
                 });
                 app.UseMiddleware(typeof(ExceptionHandler));
             }
@@ -72,6 +99,8 @@ namespace CatBasicExample
             app.UseRouting();
 
             app.UseAuthorization();
+            app.UseAuthentication();
+
 
             app.UseEndpoints(endpoints =>
             {
