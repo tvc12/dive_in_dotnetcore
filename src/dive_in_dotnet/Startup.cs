@@ -1,5 +1,6 @@
 using System;
 using CatBasicExample.Domain;
+using CatBasicExample.Exception;
 using CatBasicExample.Repositories;
 using CatBasicExample.Services;
 using Microsoft.AspNetCore.Builder;
@@ -9,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
 namespace CatBasicExample
@@ -26,14 +28,17 @@ namespace CatBasicExample
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers()
-                    .AddNewtonsoftJson(opt => opt.SerializerSettings.ContractResolver = new DefaultContractResolver { NamingStrategy = new SnakeCaseNamingStrategy() });
+                    .AddNewtonsoftJson(opt =>
+                    {
+                        opt.SerializerSettings.ContractResolver = new DefaultContractResolver { NamingStrategy = new SnakeCaseNamingStrategy() };
+                        opt.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
+                    });
 
             services.AddSingleton<Random, Random>()
                     .AddSingleton<ICatRepository, CatPostgreRepository>()
                     .AddSingleton<ICatService, CatService>()
                     .AddSwaggerGen(c => c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" }))
                     .AddDbContext<CatContext>(initDBContext, ServiceLifetime.Singleton, ServiceLifetime.Singleton);
-                    // .AddEntityFrameworkStores<CatContext>();
         }
 
         private void initDBContext(DbContextOptionsBuilder optionBuilder)
@@ -48,7 +53,6 @@ namespace CatBasicExample
         {
             if (env.IsDevelopment())
             {
-                app.UseDeveloperExceptionPage();
                 app.UseSwagger();
                 app.UseSwaggerUI(c =>
                 {
@@ -56,6 +60,7 @@ namespace CatBasicExample
                     c.RoutePrefix = string.Empty;
 
                 });
+                app.UseMiddleware(typeof(ExceptionHandler));
             }
             if (env.IsProduction() || env.IsStaging())
             {
@@ -73,5 +78,6 @@ namespace CatBasicExample
                 endpoints.MapControllers();
             });
         }
+
     }
 }
