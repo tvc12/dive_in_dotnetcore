@@ -39,7 +39,6 @@ namespace CatBasicExample
                     .AddSingleton<ICatService, CatService>()
                     .AddSwaggerGen(c => c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" }))
                     .AddDbContext<CatContext>(initDBContext, ServiceLifetime.Singleton, ServiceLifetime.Singleton);
-            // .AddEntityFrameworkStores<CatContext>();
         }
 
         private void initDBContext(DbContextOptionsBuilder optionBuilder)
