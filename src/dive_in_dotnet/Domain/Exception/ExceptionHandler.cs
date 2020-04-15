@@ -49,7 +49,7 @@ namespace CatBasicExample.Exception
             {
                 // TODO: mode production do something here
             }
-            String json = JsonUtils.ToJson(exception);
+            String json = JsonUtils.ToJson(exception.toReponse());
             await context.Response.WriteAsync(json);
         }
 

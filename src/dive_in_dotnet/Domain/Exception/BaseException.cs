@@ -28,5 +28,14 @@ namespace CatBasicExample.Exception
         [JsonIgnore]
         public override IDictionary Data { get; }
 
+        public virtual dynamic toReponse()
+        {
+            return new
+            {
+                StatusCode,
+                Message,
+                ErrorCode
+            };
+        }
     }
 }

@@ -1,19 +1,16 @@
 using System;
-using System.Data.Common;
-using System.Threading.Tasks;
 using CatBasicExample.Domain;
 using CatBasicExample.Exception;
 using CatBasicExample.Repositories;
 using CatBasicExample.Services;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
 namespace CatBasicExample
@@ -31,7 +28,11 @@ namespace CatBasicExample
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers()
-                    .AddNewtonsoftJson(opt => opt.SerializerSettings.ContractResolver = new DefaultContractResolver { NamingStrategy = new SnakeCaseNamingStrategy() });
+                    .AddNewtonsoftJson(opt =>
+                    {
+                        opt.SerializerSettings.ContractResolver = new DefaultContractResolver { NamingStrategy = new SnakeCaseNamingStrategy() };
+                        opt.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
+                    });
 
             services.AddSingleton<Random, Random>()
                     .AddSingleton<ICatRepository, CatPostgreRepository>()
