@@ -1,18 +1,15 @@
 using System;
-using System.Text;
 using AuthService.Service;
+using CatBasicExample.Controllers.Filter;
 using CatBasicExample.Domain;
-using CatBasicExample.Exception;
 using CatBasicExample.Repositories;
 using CatBasicExample.Services;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
@@ -31,6 +28,7 @@ namespace CatBasicExample
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddHttpContextAccessor();
             services.AddControllers()
                     .AddNewtonsoftJson(opt =>
                     {
@@ -38,30 +36,23 @@ namespace CatBasicExample
                         opt.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
                     });
 
-            services.AddAuthentication(x =>
+            services.AddAuthentication(options =>
             {
-                x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            }
-            ).AddJwtBearer(x =>
-            {
-                x.RequireHttpsMetadata = false;
-                x.SaveToken = true;
-                x.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuerSigningKey = true,
-                    ValidateIssuer = false,
-                    ValidateAudience = false,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["auth:sk"]))
-                };
-            });
-
+                options.DefaultAuthenticateScheme = AuthOptions.DefaultScheme;
+                options.DefaultChallengeScheme = AuthOptions.DefaultScheme;
+            })
+            .AddCustomAuth(options => { });
             services.AddSingleton<Random, Random>()
                     .AddSingleton<IAuthService, AuthService.Service.AuthService>()
                     .AddSingleton<ICatRepository, CatPostgreRepository>()
                     .AddSingleton<ICatService, CatService>()
                     .AddSwaggerGen(c => c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" }))
                     .AddDbContext<CatContext>(initDBContext, ServiceLifetime.Singleton, ServiceLifetime.Singleton);
+            services.AddMvc(options =>
+            {
+                options.EnableEndpointRouting = false;
+                // options.Filters.Add(new AuthorizeFilter(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build()));
+            });
         }
 
         private void initDBContext(DbContextOptionsBuilder optionBuilder)
@@ -98,8 +89,9 @@ namespace CatBasicExample
 
             app.UseRouting();
 
-            app.UseAuthorization();
             app.UseAuthentication();
+
+            app.UseMvc();
 
 
             app.UseEndpoints(endpoints =>

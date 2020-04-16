@@ -11,9 +11,9 @@ namespace AuthService.Service
 {
     public interface IAuthService
     {
-        public LoginedUser login(string username, string password);
+        public LoggedInUser login(string username, string password);
 
-        public LoginedUser getLoginedUser(string token);
+        public LoggedInUser getLoginedUser(string token);
     }
 
     public class AuthService : IAuthService
@@ -22,23 +22,37 @@ namespace AuthService.Service
 
         private SymmetricSecurityKey securityKey;
         private SigningCredentials credentials;
-
+        private TokenValidationParameters validator;
         public AuthService(IConfiguration config)
         {
             this.config = config;
             securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["auth:sk"]));
             credentials = new SigningCredentials(securityKey, config["auth:algorithm"]);
+            validator = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                ValidateIssuer = false,
+                ValidateAudience = false,
+                IssuerSigningKey = securityKey
+            };
         }
 
-        public LoginedUser getLoginedUser(string token)
+        public LoggedInUser getLoginedUser(string token)
         {
-            throw new System.NotImplementedException();
+            JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
+            tokenHandler.ValidateToken(token, validator, out SecurityToken validatedToken);
+            var data = validatedToken as JwtSecurityToken;
+            return new LoggedInUser(
+                data.Payload["username"].ToString(),
+                token,
+                data.Payload["role"].ToString()
+            );
         }
 
-        public LoginedUser login(string username, string password)
+        public LoggedInUser login(string username, string password)
         {
             string token = getToken(username);
-            return new LoginedUser(username, token);
+            return new LoggedInUser(username, token);
         }
 
         public string getToken(string username)

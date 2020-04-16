@@ -17,7 +17,7 @@ namespace AuthService.Controller {
 
         [HttpGet]
         [AllowAnonymous]
-        public Task<LoginedUser> login([FromQuery] string username, [FromQuery] string password) {
+        public Task<LoggedInUser> login([FromQuery] string username, [FromQuery] string password) {
             return Task.Run(() => service.login(username, password));
         }
     }

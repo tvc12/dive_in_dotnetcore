@@ -1,12 +1,12 @@
 using System;
-using System.Data.Common;
 using System.Threading.Tasks;
+using CatBasicExample.Domain.Exception;
 using CatBasicExample.Utils;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
 
-namespace CatBasicExample.Exception
+namespace CatBasicExample.Controllers.Filter
 {
     public interface IExceptionHandler
     {
@@ -50,6 +50,7 @@ namespace CatBasicExample.Exception
                 // TODO: mode production do something here
             }
             String json = JsonUtils.ToJson(exception.toReponse());
+            context.Response.StatusCode = Convert.ToInt32(exception.StatusCode);
             await context.Response.WriteAsync(json);
         }
 
