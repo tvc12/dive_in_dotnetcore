@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Text.Json.Serialization;
 
-namespace CatBasicExample.Exception
+namespace CatBasicExample.Domain.Exception
 {
     public class BaseException : System.Exception
     {

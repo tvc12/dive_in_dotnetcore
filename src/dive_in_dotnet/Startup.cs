@@ -1,6 +1,7 @@
 using System;
+using AuthService.Service;
+using CatBasicExample.Controllers.Filter;
 using CatBasicExample.Domain;
-using CatBasicExample.Exception;
 using CatBasicExample.Repositories;
 using CatBasicExample.Services;
 using Microsoft.AspNetCore.Builder;
@@ -27,6 +28,7 @@ namespace CatBasicExample
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddHttpContextAccessor();
             services.AddControllers()
                     .AddNewtonsoftJson(opt =>
                     {
@@ -34,11 +36,23 @@ namespace CatBasicExample
                         opt.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
                     });
 
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = AuthOptions.DefaultScheme;
+                options.DefaultChallengeScheme = AuthOptions.DefaultScheme;
+            })
+            .AddCustomAuth(options => { });
             services.AddSingleton<Random, Random>()
+                    .AddSingleton<IAuthService, AuthService.Service.AuthService>()
                     .AddSingleton<ICatRepository, CatPostgreRepository>()
                     .AddSingleton<ICatService, CatService>()
                     .AddSwaggerGen(c => c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" }))
                     .AddDbContext<CatContext>(initDBContext, ServiceLifetime.Singleton, ServiceLifetime.Singleton);
+            services.AddMvc(options =>
+            {
+                options.EnableEndpointRouting = false;
+                // options.Filters.Add(new AuthorizeFilter(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build()));
+            });
         }
 
         private void initDBContext(DbContextOptionsBuilder optionBuilder)
@@ -51,14 +65,18 @@ namespace CatBasicExample
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseCors(conf =>
+                conf.AllowAnyOrigin()
+                    .AllowAnyHeader()
+                    .AllowAnyMethod());
+
             if (env.IsDevelopment())
             {
                 app.UseSwagger();
                 app.UseSwaggerUI(c =>
                 {
                     c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
-                    c.RoutePrefix = string.Empty;
-
+                    c.RoutePrefix = string.Empty; //config route swagger
                 });
                 app.UseMiddleware(typeof(ExceptionHandler));
             }
@@ -71,7 +89,10 @@ namespace CatBasicExample
 
             app.UseRouting();
 
-            app.UseAuthorization();
+            app.UseAuthentication();
+
+            app.UseMvc();
+
 
             app.UseEndpoints(endpoints =>
             {

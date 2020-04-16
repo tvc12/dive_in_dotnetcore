@@ -1,6 +1,8 @@
 using System.Collections.Generic;
+using AuthService.Domain;
 using CatBasicExample.Domain;
 using CatBasicExample.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CatBasicExample.Controllers
@@ -35,6 +37,7 @@ namespace CatBasicExample.Controllers
         }
 
         [HttpGet()]
+        [Authorize]
         public ActionResult<List<Cat>> Get()
         {
             return service.Cats();
